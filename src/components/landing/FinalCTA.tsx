@@ -1,22 +1,17 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
 import { useScrollFade } from "@/hooks/useScrollFade";
 
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/eVq6oB16F7o19v61s114400";
+
 const FinalCTA = () => {
   const ref = useScrollFade();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleClick = () => {
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 1500);
-  };
 
   return (
     <section id="final-cta" ref={ref} className="section-padding bg-secondary-section scroll-fade">
       <div className="container-custom max-w-[600px] text-center">
         <h2 className="text-subheadline mb-6">Stop guessing. Start building.</h2>
-        
+
         <div className="text-body-large max-w-[500px] mx-auto mb-10 space-y-4">
           <p>
             The difference between people who ship profitable projects and people who don't isn't coding ability. AI leveled that playing field.
@@ -33,13 +28,18 @@ const FinalCTA = () => {
           $99. Lifetime access. 30-day guarantee.
         </p>
 
-        <Button 
+        <Button
+          asChild
           size="lg"
           className="btn-glow h-14 px-10 text-lg mb-4"
-          onClick={handleClick}
-          disabled={isLoading}
         >
-          {isLoading ? "Loading..." : "Get Lifetime Access — $99"}
+          <a
+            href={STRIPE_CHECKOUT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Get Lifetime Access — $99
+          </a>
         </Button>
 
         <div className="badge-guarantee mx-auto w-fit mt-4">

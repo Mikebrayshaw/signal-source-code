@@ -1,22 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Shield } from "lucide-react";
 
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/eVq6oB16F7o19v61s114400";
+
 const Hero = () => {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Simulate checkout redirect
-    setTimeout(() => {
-      setIsLoading(false);
-      // Would redirect to payment here
-    }, 1500);
-  };
-
   return (
     <section className="pt-32 pb-24 md:pt-40 md:pb-32 bg-primary-section">
       <div className="container-custom max-w-[800px] text-center">
@@ -35,27 +22,21 @@ const Hero = () => {
           A database of validated problems people are already complaining about + the GitHub repos to build solutions. Updated weekly.
         </p>
 
-        <form 
-          onSubmit={handleSubmit}
-          className="animate-fade-in-up stagger-3 flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-6"
-        >
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 h-14 px-5 bg-card border-border text-foreground placeholder:text-foreground-muted input-glow"
-            required
-          />
-          <Button 
-            type="submit" 
+        <div className="animate-fade-in-up stagger-3 mb-6">
+          <Button
+            asChild
             size="lg"
             className="btn-glow h-14 px-8 whitespace-nowrap"
-            disabled={isLoading}
           >
-            {isLoading ? "Loading..." : "Get Lifetime Access — $99"}
+            <a
+              href={STRIPE_CHECKOUT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Get Lifetime Access — $99
+            </a>
           </Button>
-        </form>
+        </div>
 
         <div className="animate-fade-in-up stagger-4 flex items-center justify-center gap-2 text-foreground-muted text-sm">
           <Shield className="w-4 h-4" />
