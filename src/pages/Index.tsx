@@ -13,6 +13,7 @@ import FAQ from "@/components/landing/FAQ";
 import FinalCTA from "@/components/landing/FinalCTA";
 import PS from "@/components/landing/PS";
 import Footer from "@/components/landing/Footer";
+import EmailPopup from "@/components/landing/EmailPopup";
 
 const Index = () => {
   return (
@@ -34,6 +35,7 @@ const Index = () => {
         <PS />
       </main>
       <Footer />
+      <EmailPopup />
     </div>
   );
 };
