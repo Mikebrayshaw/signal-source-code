@@ -1,0 +1,67 @@
+{
+  "signals": [
+    {
+      "title": "Ask HN: Is there a tool that monitors competitor pricing automatically?",
+      "category": "SaaS",
+      "summary": "Founder looking for automated competitor price tracking across 50+ sites. Willing to pay $50-100/mo.",
+      "solution_exists": false,
+      "date": "2026-02-02",
+      "hn_url": "https://news.ycombinator.com/item?id=example1",
+      "signal_type": "Direct request"
+    },
+    {
+      "title": "I'd pay good money for a Zapier alternative that actually handles errors well",
+      "category": "Automation",
+      "summary": "Developer frustrated with Zapier's error handling. Multiple replies agreeing. No one has built a reliability-first alternative.",
+      "solution_exists": false,
+      "date": "2026-02-04",
+      "hn_url": "https://news.ycombinator.com/item?id=example2",
+      "signal_type": "Pain point"
+    },
+    {
+      "title": "Ask HN: How do you manage multiple AI API subscriptions and costs?",
+      "category": "Dev Tools",
+      "summary": "CTO looking for unified AI spend tracking across OpenAI, Anthropic, Gemini. 490+ points, only manual spreadsheet solutions suggested.",
+      "solution_exists": false,
+      "date": "2026-02-01",
+      "hn_url": "https://news.ycombinator.com/item?id=example3",
+      "signal_type": "Direct request"
+    },
+    {
+      "title": "Show HN: I built a Notion-to-blog pipeline but it breaks every week",
+      "category": "Content Tools",
+      "summary": "Creator wants reliable Notion-to-static-site publishing. Existing tools break on API changes. Users asking for paid alternative.",
+      "solution_exists": false,
+      "date": "2026-02-03",
+      "hn_url": "https://news.ycombinator.com/item?id=example4",
+      "signal_type": "Pain point"
+    },
+    {
+      "title": "Ask HN: Best way to do SOC 2 compliance as a 3-person startup?",
+      "category": "Compliance",
+      "summary": "Tiny team needs SOC 2 for enterprise deals. Current tools cost $20k+. Multiple founders asking for a $500/mo alternative.",
+      "solution_exists": false,
+      "date": "2026-02-05",
+      "hn_url": "https://news.ycombinator.com/item?id=example5",
+      "signal_type": "Direct request"
+    },
+    {
+      "title": "Why is there no good open-source Calendly alternative?",
+      "category": "Productivity",
+      "summary": "Thread debating why self-hosted scheduling tools all feel half-baked. Several devs expressing willingness to pay for a polished OSS option.",
+      "solution_exists": true,
+      "date": "2026-01-30",
+      "hn_url": "https://news.ycombinator.com/item?id=example6",
+      "signal_type": "Market gap"
+    },
+    {
+      "title": "Ask HN: How are you handling LLM output evaluation in production?",
+      "category": "AI/ML",
+      "summary": "ML engineer asking for production-grade LLM eval tools. No clear winner mentioned. Teams building custom solutions from scratch.",
+      "solution_exists": false,
+      "date": "2026-02-06",
+      "hn_url": "https://news.ycombinator.com/item?id=example7",
+      "signal_type": "Direct request"
+    }
+  ]
+}
