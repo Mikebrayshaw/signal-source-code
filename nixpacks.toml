@@ -1,8 +1,11 @@
 [phases.setup]
-nixPkgs = ["python3"]
+nixPkgs = ["nodejs_18"]
+
+[phases.install]
+cmds = ["npm ci"]
 
 [phases.build]
-cmds = ["echo 'Static site, no build needed'"]
+cmds = ["npm run build"]
 
 [start]
-cmd = "python3 -m http.server 8080 --directory ."
+cmd = "npm run start"
