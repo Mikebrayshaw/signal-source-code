@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Dev bypass — auto-login with mock user
-    if (import.meta.env.DEV) {
+    if (import.meta.env.VITE_DEV_AUTH_BYPASS === 'true') {
       setUser({ id: 'dev-user', email: 'dev@buildsignals.com' })
       setLoading(false)
       return
