@@ -1,14 +1,29 @@
 export interface Signal {
   id: string
+  source: 'hn_ask' | 'hn_show' | 'producthunt'
   title: string
-  category: Category
   summary: string
+  description: string
+  category: Category
+  signal_type: SignalType
   solution_exists: boolean
   date: string
   hn_url: string
-  signal_type: SignalType
   points?: number
   comments?: number
+  author?: string
+  external_url?: string
+  github_repos?: GitHubRepo[]
+}
+
+export interface GitHubRepo {
+  name: string
+  url: string
+  description: string
+  stars: number
+  language: string
+  topics: string[]
+  updated_at: string
 }
 
 export type Category =

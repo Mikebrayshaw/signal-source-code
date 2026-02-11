@@ -32,6 +32,35 @@ export default function SignalCard({ signal }: { signal: Signal }) {
         {signal.summary}
       </p>
 
+      {/* GitHub repos section (if available) */}
+      {signal.github_repos && signal.github_repos.length > 0 && (
+        <div className="mb-3 bg-white/5 rounded-lg p-3 border border-border/50">
+          <div className="text-xs text-gray-500 font-mono uppercase tracking-wider mb-2">
+            Matched GitHub Repos
+          </div>
+          <div className="space-y-2">
+            {signal.github_repos.slice(0, 3).map((repo, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-sm">
+                <a
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:text-accent-dim font-mono transition-colors"
+                >
+                  {repo.name}
+                </a>
+                <span className="text-muted">⭐ {repo.stars}</span>
+                {repo.language && (
+                  <span className="px-1.5 py-0.5 bg-blue-500/15 text-blue-400 rounded text-xs font-mono">
+                    {repo.language}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Bottom row: solution badge + meta */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <SolutionBadge exists={signal.solution_exists} />
