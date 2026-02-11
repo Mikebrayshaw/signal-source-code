@@ -17,7 +17,7 @@ import type {
   DateRange,
 } from '../lib/types'
 import { mockSignals } from '../lib/mockData'
-import { PAGE_SIZE } from '../lib/constants'
+import { PAGE_SIZE, INITIAL_FETCH_LIMIT } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import { mapOpportunityToSignal } from '../lib/mappers'
 
@@ -102,7 +102,7 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
           .from('opportunities')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(100)
+          .limit(INITIAL_FETCH_LIMIT)
 
         if (error) throw error
 

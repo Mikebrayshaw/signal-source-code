@@ -27,3 +27,5 @@ export const ALL_SIGNAL_TYPES: SignalType[] = [
 ]
 
 export const PAGE_SIZE = 20
+export const INITIAL_FETCH_LIMIT = 100
+

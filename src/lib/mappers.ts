@@ -1,5 +1,8 @@
 import type { Signal, Category, SignalType, GitHubRepo } from './types'
 
+// Constants
+const SUMMARY_MAX_LENGTH = 150
+
 /**
  * Database schema for the `opportunities` table
  */
@@ -195,13 +198,15 @@ export function mapOpportunityToSignal(row: OpportunityRow): Signal {
   const category = deriveCategory(row.title, row.description)
   const signalType = deriveSignalType(row.source, row.title, row.description)
   const githubRepos = parseGitHubData(row.github_data)
+  // Note: solution_exists is determined by GitHub repo presence
+  // This is a heuristic - a dedicated DB column would be more accurate
   const solutionExists = githubRepos !== undefined && githubRepos.length > 0
 
   return {
     id: row.id,
     source: row.source,
     title: row.title,
-    summary: truncateText(row.description, 150),
+    summary: truncateText(row.description, SUMMARY_MAX_LENGTH),
     description: row.description,
     category,
     signal_type: signalType,
