@@ -18,12 +18,16 @@ import type {
 } from '../lib/types'
 import { mockSignals } from '../lib/mockData'
 import { PAGE_SIZE } from '../lib/constants'
+import { supabase } from '../lib/supabase'
+import { mapOpportunityToSignal } from '../lib/mappers'
 
 interface SignalsContextType {
   // Data
   allSignals: Signal[]
   filteredSignals: Signal[]
   displayedSignals: Signal[]
+  loading: boolean
+  error: string | null
   // Nav
   navFilter: NavFilter
   setNavFilter: (f: NavFilter) => void
@@ -75,7 +79,9 @@ function saveSet(key: string, set: Set<string>) {
 }
 
 export function SignalsProvider({ children }: { children: ReactNode }) {
-  const [allSignals] = useState<Signal[]>(mockSignals)
+  const [allSignals, setAllSignals] = useState<Signal[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [navFilter, setNavFilter] = useState<NavFilter>('all')
   const [selectedCategories, setSelectedCategories] = useState<Set<Category>>(new Set())
   const [selectedSignalTypes, setSelectedSignalTypes] = useState<Set<SignalType>>(new Set())
@@ -87,6 +93,31 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
   const [page, setPage] = useState(1)
   const [savedIds, setSavedIds] = useState<Set<string>>(() => loadSet('savedIds'))
   const [archivedIds, setArchivedIds] = useState<Set<string>>(() => loadSet('archivedIds'))
+
+  // Fetch signals from Supabase on mount
+  useEffect(() => {
+    async function fetchSignals() {
+      try {
+        const { data, error } = await supabase
+          .from('opportunities')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100)
+
+        if (error) throw error
+
+        const signals = (data || []).map(mapOpportunityToSignal)
+        setAllSignals(signals)
+      } catch (err) {
+        console.error('Failed to fetch signals:', err)
+        setAllSignals(mockSignals) // Fallback to mock data
+        setError('Failed to load live data. Showing sample signals.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSignals()
+  }, [])
 
   // Persist save/archive
   useEffect(() => saveSet('savedIds', savedIds), [savedIds])
@@ -212,6 +243,8 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
         allSignals,
         filteredSignals,
         displayedSignals,
+        loading,
+        error,
         navFilter,
         setNavFilter,
         selectedCategories,
