@@ -13,13 +13,13 @@ import type {
   SortOption,
   ViewMode,
   Category,
-  SignalType,
+  Confidence,
   DateRange,
 } from '../lib/types'
 import { mockSignals } from '../lib/mockData'
-import { PAGE_SIZE, INITIAL_FETCH_LIMIT } from '../lib/constants'
+import { PAGE_SIZE } from '../lib/constants'
 import { supabase } from '../lib/supabase'
-import { mapOpportunityToSignal } from '../lib/mappers'
+import { mapValidatedOpportunityToSignal } from '../lib/mappers'
 
 interface SignalsContextType {
   // Data
@@ -34,12 +34,10 @@ interface SignalsContextType {
   // Filters
   selectedCategories: Set<Category>
   toggleCategory: (c: Category) => void
-  selectedSignalTypes: Set<SignalType>
-  toggleSignalType: (t: SignalType) => void
+  selectedConfidences: Set<Confidence>
+  toggleConfidence: (c: Confidence) => void
   dateRange: DateRange
   setDateRange: (d: DateRange) => void
-  solutionFilter: 'all' | 'exists' | 'none'
-  setSolutionFilter: (f: 'all' | 'exists' | 'none') => void
   // Search & Sort
   searchQuery: string
   setSearchQuery: (q: string) => void
@@ -59,7 +57,7 @@ interface SignalsContextType {
   toggleArchive: (id: string) => void
   // Stats
   totalCount: number
-  openCount: number
+  highConfidenceCount: number
   savedCount: number
 }
 
@@ -84,9 +82,8 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [navFilter, setNavFilter] = useState<NavFilter>('all')
   const [selectedCategories, setSelectedCategories] = useState<Set<Category>>(new Set())
-  const [selectedSignalTypes, setSelectedSignalTypes] = useState<Set<SignalType>>(new Set())
+  const [selectedConfidences, setSelectedConfidences] = useState<Set<Confidence>>(new Set())
   const [dateRange, setDateRange] = useState<DateRange>('all')
-  const [solutionFilter, setSolutionFilter] = useState<'all' | 'exists' | 'none'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOption, setSortOption] = useState<SortOption>('newest')
   const [viewMode, setViewMode] = useState<ViewMode>('feed')
@@ -99,18 +96,17 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
     async function fetchSignals() {
       try {
         const { data, error } = await supabase
-          .from('opportunities')
+          .from('validated_opportunities')
           .select('*')
-          .order('created_at', { ascending: false })
-          .limit(INITIAL_FETCH_LIMIT)
+          .order('validated_at', { ascending: false })
 
         if (error) throw error
 
-        const signals = (data || []).map(mapOpportunityToSignal)
+        const signals = (data || []).map(mapValidatedOpportunityToSignal)
         setAllSignals(signals)
       } catch (err) {
         console.error('Failed to fetch signals:', err)
-        setAllSignals(mockSignals) // Fallback to mock data
+        setAllSignals(mockSignals)
         setError('Failed to load live data. Showing sample signals.')
       } finally {
         setLoading(false)
@@ -124,7 +120,7 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
   useEffect(() => saveSet('archivedIds', archivedIds), [archivedIds])
 
   // Reset page on any filter change
-  useEffect(() => { setPage(1) }, [navFilter, selectedCategories, selectedSignalTypes, dateRange, solutionFilter, searchQuery, sortOption])
+  useEffect(() => { setPage(1) }, [navFilter, selectedCategories, selectedConfidences, dateRange, searchQuery, sortOption])
 
   const toggleCategory = useCallback((c: Category) => {
     setSelectedCategories(prev => {
@@ -134,10 +130,10 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const toggleSignalType = useCallback((t: SignalType) => {
-    setSelectedSignalTypes(prev => {
+  const toggleConfidence = useCallback((c: Confidence) => {
+    setSelectedConfidences(prev => {
       const next = new Set(prev)
-      next.has(t) ? next.delete(t) : next.add(t)
+      next.has(c) ? next.delete(c) : next.add(c)
       return next
     })
   }, [])
@@ -167,20 +163,20 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
     } else if (navFilter === 'archived') {
       result = result.filter(s => archivedIds.has(s.id))
     } else if (navFilter === 'open') {
-      result = result.filter(s => !s.solution_exists)
+      result = result.filter(s => s.confidence === 'high')
     } else {
       // 'all' — hide archived unless viewing archive
       result = result.filter(s => !archivedIds.has(s.id))
     }
 
-    // Category filter
+    // Category filter (multi-category: signal matches if any category is selected)
     if (selectedCategories.size > 0) {
-      result = result.filter(s => selectedCategories.has(s.category))
+      result = result.filter(s => s.categories.some(c => selectedCategories.has(c)))
     }
 
-    // Signal type filter
-    if (selectedSignalTypes.size > 0) {
-      result = result.filter(s => selectedSignalTypes.has(s.signal_type))
+    // Confidence filter
+    if (selectedConfidences.size > 0) {
+      result = result.filter(s => selectedConfidences.has(s.confidence))
     }
 
     // Date filter
@@ -190,21 +186,14 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
       result = result.filter(s => now - new Date(s.date).getTime() <= ms)
     }
 
-    // Solution filter
-    if (solutionFilter === 'exists') {
-      result = result.filter(s => s.solution_exists)
-    } else if (solutionFilter === 'none') {
-      result = result.filter(s => !s.solution_exists)
-    }
-
     // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       result = result.filter(
         s =>
           s.title.toLowerCase().includes(q) ||
-          s.summary.toLowerCase().includes(q) ||
-          s.category.toLowerCase().includes(q)
+          s.narrative.toLowerCase().includes(q) ||
+          s.one_line_hook.toLowerCase().includes(q)
       )
     }
 
@@ -219,11 +208,13 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
           return (b.points ?? 0) - (a.points ?? 0)
         case 'most-comments':
           return (b.comments ?? 0) - (a.comments ?? 0)
+        case 'most-relevant':
+          return b.relevance_score - a.relevance_score
       }
     })
 
     return result
-  }, [allSignals, navFilter, selectedCategories, selectedSignalTypes, dateRange, solutionFilter, searchQuery, sortOption, savedIds, archivedIds])
+  }, [allSignals, navFilter, selectedCategories, selectedConfidences, dateRange, searchQuery, sortOption, savedIds, archivedIds])
 
   const displayedSignals = useMemo(
     () => filteredSignals.slice(0, page * PAGE_SIZE),
@@ -234,7 +225,7 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
   const loadMore = useCallback(() => setPage(p => p + 1), [])
 
   const totalCount = allSignals.filter(s => !archivedIds.has(s.id)).length
-  const openCount = allSignals.filter(s => !s.solution_exists && !archivedIds.has(s.id)).length
+  const highConfidenceCount = allSignals.filter(s => s.confidence === 'high' && !archivedIds.has(s.id)).length
   const savedCount = allSignals.filter(s => savedIds.has(s.id)).length
 
   return (
@@ -249,12 +240,10 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
         setNavFilter,
         selectedCategories,
         toggleCategory,
-        selectedSignalTypes,
-        toggleSignalType,
+        selectedConfidences,
+        toggleConfidence,
         dateRange,
         setDateRange,
-        solutionFilter,
-        setSolutionFilter,
         searchQuery,
         setSearchQuery,
         sortOption,
@@ -269,7 +258,7 @@ export function SignalsProvider({ children }: { children: ReactNode }) {
         toggleSave,
         toggleArchive,
         totalCount,
-        openCount,
+        highConfidenceCount,
         savedCount,
       }}
     >

@@ -1,49 +1,69 @@
-export interface Signal {
-  id: string
-  source: 'hn_ask' | 'hn_show' | 'producthunt'
-  title: string
+export interface EvidenceBucket {
+  status: string
+  results: any[]
   summary: string
-  description: string
-  category: Category
-  signal_type: SignalType
-  solution_exists: boolean
-  date: string
-  hn_url: string
-  points?: number
-  comments?: number
-  author?: string
-  external_url?: string
-  github_repos?: GitHubRepo[]
+  supporting: boolean
 }
 
-export interface GitHubRepo {
-  name: string
-  url: string
-  description: string
-  stars: number
-  language: string
-  topics: string[]
-  updated_at: string
+export interface Signal {
+  id: string
+  signal_id: string
+  source: string
+  title: string
+  narrative: string
+  one_line_hook: string
+  key_insight: string
+  categories: Category[]
+  confidence: Confidence
+  relevance_score: number
+  content_potential: number
+  sources_confirming: number
+  date: string
+  signal_url: string
+  points?: number
+  comments?: number
+  evidence: {
+    google_trends?: EvidenceBucket
+    product_hunt?: EvidenceBucket
+    github?: EvidenceBucket
+  }
+}
+
+export interface ValidatedOpportunityRow {
+  id: string
+  signal_id: string
+  signal_source: string
+  signal_title: string
+  signal_url: string
+  signal_score: number
+  signal_comments: number
+  relevance_score: number
+  content_potential: number
+  sources_confirming: number
+  opportunity_type: string
+  confidence: string
+  narrative: string
+  one_line_hook: string
+  key_insight: string
+  queries: any
+  evidence_google_trends: any
+  evidence_producthunt: any
+  evidence_github: any
+  validated_at: string
+  model_used: string
 }
 
 export type Category =
-  | 'SaaS'
-  | 'Automation'
-  | 'Dev Tools'
-  | 'Content Tools'
-  | 'Compliance'
-  | 'Productivity'
-  | 'AI/ML'
+  | 'developer-tooling'
+  | 'demographic-market-gap'
+  | 'infrastructure-need'
+  | 'workflow-inefficiency'
+  | 'emerging-category'
 
-export type SignalType =
-  | 'Direct request'
-  | 'Pain point'
-  | 'Market gap'
-  | 'Frustration'
-  | 'Wish list'
+export type Confidence = 'high' | 'medium' | 'low'
 
 export type NavFilter = 'all' | 'open' | 'saved' | 'archived'
-export type SortOption = 'newest' | 'oldest' | 'most-points' | 'most-comments'
+export type SortOption = 'newest' | 'oldest' | 'most-points' | 'most-comments' | 'most-relevant'
 export type ViewMode = 'feed' | 'compact'
 export type DateRange = 'all' | '24h' | '7d' | '30d'
 

@@ -1,222 +1,81 @@
-import type { Signal, Category, SignalType, GitHubRepo } from './types'
-
-// Constants
-const SUMMARY_MAX_LENGTH = 150
+import type { Signal, Category, EvidenceBucket, ValidatedOpportunityRow } from './types'
 
 /**
- * Database schema for the `opportunities` table
+ * Safely parse a JSONB field that may be a string or already an object
  */
-export interface OpportunityRow {
-  id: string
-  source: 'hn_ask' | 'hn_show' | 'producthunt'
-  source_id: string
-  title: string
-  description: string
-  url: string
-  external_url: string | null
-  author: string
-  score: number
-  comments: number
-  github_url: string | null
-  github_data: any[] | null
-  topics: string[] | null
-  created_at: string
-  fetched_at: string
+function parseJsonField<T>(field: any): T | null {
+  if (!field) return null
+  if (typeof field === 'string') {
+    try {
+      return JSON.parse(field) as T
+    } catch {
+      return null
+    }
+  }
+  return field as T
 }
 
 /**
- * Derives category from title and description keywords
+ * Parse slash-separated opportunity_type into Category array
  */
-function deriveCategory(title: string, description: string): Category {
-  const text = `${title} ${description}`.toLowerCase()
+function parseCategories(opportunityType: string | null): Category[] {
+  if (!opportunityType) return ['emerging-category']
 
-  if (
-    text.includes('api') ||
-    text.includes('sdk') ||
-    text.includes('cli') ||
-    text.includes('deploy') ||
-    text.includes('devops') ||
-    text.includes('ci/cd') ||
-    text.includes('testing') ||
-    text.includes('debug') ||
-    text.includes('code review') ||
-    text.includes('developer') ||
-    text.includes('open source') ||
-    text.includes('github')
-  ) {
-    return 'Dev Tools'
-  }
+  const validCategories: Category[] = [
+    'developer-tooling',
+    'demographic-market-gap',
+    'infrastructure-need',
+    'workflow-inefficiency',
+    'emerging-category',
+  ]
 
-  if (
-    text.includes('ai') ||
-    text.includes('ml') ||
-    text.includes('llm') ||
-    text.includes('gpt') ||
-    text.includes('model') ||
-    text.includes('neural') ||
-    text.includes('machine learning')
-  ) {
-    return 'AI/ML'
-  }
+  const parsed = opportunityType
+    .split('/')
+    .map(s => s.trim().toLowerCase().replace(/\s+/g, '-'))
+    .filter((s): s is Category => validCategories.includes(s as Category))
 
-  if (
-    text.includes('automat') ||
-    text.includes('workflow') ||
-    text.includes('zapier') ||
-    text.includes('no-code') ||
-    text.includes('integration')
-  ) {
-    return 'Automation'
-  }
-
-  if (
-    text.includes('content') ||
-    text.includes('cms') ||
-    text.includes('blog') ||
-    text.includes('writing') ||
-    text.includes('seo') ||
-    text.includes('publish')
-  ) {
-    return 'Content Tools'
-  }
-
-  if (
-    text.includes('compliance') ||
-    text.includes('soc') ||
-    text.includes('gdpr') ||
-    text.includes('security') ||
-    text.includes('audit') ||
-    text.includes('ssl') ||
-    text.includes('certificate')
-  ) {
-    return 'Compliance'
-  }
-
-  if (
-    text.includes('calendar') ||
-    text.includes('scheduling') ||
-    text.includes('productivity') ||
-    text.includes('time') ||
-    text.includes('task') ||
-    text.includes('todo') ||
-    text.includes('analytics')
-  ) {
-    return 'Productivity'
-  }
-
-  if (
-    text.includes('saas') ||
-    text.includes('subscription') ||
-    text.includes('billing') ||
-    text.includes('pricing') ||
-    text.includes('startup') ||
-    text.includes('b2b')
-  ) {
-    return 'SaaS'
-  }
-
-  return 'SaaS' // Default
+  return parsed.length > 0 ? parsed : ['emerging-category']
 }
 
 /**
- * Derives signal type from source and title/description patterns
+ * Parse an evidence bucket from JSONB
  */
-function deriveSignalType(
-  source: string,
-  title: string,
-  description: string
-): SignalType {
-  const titleLower = title.toLowerCase()
-  const descLower = description.toLowerCase()
-
-  // Direct request
-  if (source === 'hn_ask' || titleLower.startsWith('ask hn')) {
-    return 'Direct request'
+function parseEvidence(raw: any): EvidenceBucket | undefined {
+  const parsed = parseJsonField<EvidenceBucket>(raw)
+  if (!parsed) return undefined
+  return {
+    status: parsed.status || 'unknown',
+    results: Array.isArray(parsed.results) ? parsed.results : [],
+    summary: parsed.summary || '',
+    supporting: parsed.supporting ?? false,
   }
-
-  // Market gap
-  if (source === 'hn_show' || titleLower.startsWith('show hn')) {
-    return 'Market gap'
-  }
-
-  // Frustration
-  if (
-    descLower.includes('frustrat') ||
-    descLower.includes('annoying') ||
-    descLower.includes('broken') ||
-    descLower.includes('terrible') ||
-    descLower.includes('hate')
-  ) {
-    return 'Frustration'
-  }
-
-  // Wish list
-  if (
-    descLower.includes('wish') ||
-    descLower.includes('would be nice') ||
-    descLower.includes('want') ||
-    descLower.includes('need') ||
-    descLower.includes('looking for')
-  ) {
-    return 'Wish list'
-  }
-
-  return 'Pain point' // Default
 }
 
 /**
- * Truncates text to max length with ellipsis
+ * Maps a validated_opportunities DB row to a Signal
  */
-function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text
-  return text.slice(0, maxLength).trim() + '...'
-}
-
-/**
- * Parses github_data JSONB into typed GitHubRepo array
- */
-function parseGitHubData(githubData: any[] | null): GitHubRepo[] | undefined {
-  if (!githubData || !Array.isArray(githubData) || githubData.length === 0) {
-    return undefined
-  }
-
-  return githubData.map(repo => ({
-    name: repo.name || '',
-    url: repo.url || repo.html_url || '',
-    description: repo.description || '',
-    stars: repo.stars || repo.stargazers_count || 0,
-    language: repo.language || '',
-    topics: repo.topics || [],
-    updated_at: repo.updated_at || '',
-  }))
-}
-
-/**
- * Maps a database OpportunityRow to a Signal
- */
-export function mapOpportunityToSignal(row: OpportunityRow): Signal {
-  const category = deriveCategory(row.title, row.description)
-  const signalType = deriveSignalType(row.source, row.title, row.description)
-  const githubRepos = parseGitHubData(row.github_data)
-  // Note: solution_exists is determined by GitHub repo presence
-  // This is a heuristic - a dedicated DB column would be more accurate
-  const solutionExists = githubRepos !== undefined && githubRepos.length > 0
-
+export function mapValidatedOpportunityToSignal(row: ValidatedOpportunityRow): Signal {
   return {
     id: row.id,
-    source: row.source,
-    title: row.title,
-    summary: truncateText(row.description, SUMMARY_MAX_LENGTH),
-    description: row.description,
-    category,
-    signal_type: signalType,
-    solution_exists: solutionExists,
-    date: row.created_at,
-    hn_url: row.url,
-    points: row.score,
-    comments: row.comments,
-    author: row.author,
-    external_url: row.external_url || undefined,
-    github_repos: githubRepos,
+    signal_id: row.signal_id,
+    source: row.signal_source,
+    title: row.signal_title,
+    narrative: row.narrative || '',
+    one_line_hook: row.one_line_hook || '',
+    key_insight: row.key_insight || '',
+    categories: parseCategories(row.opportunity_type),
+    confidence: (row.confidence?.toLowerCase() as Signal['confidence']) || 'low',
+    relevance_score: row.relevance_score ?? 0,
+    content_potential: row.content_potential ?? 0,
+    sources_confirming: row.sources_confirming ?? 0,
+    date: row.validated_at,
+    signal_url: row.signal_url || '',
+    points: row.signal_score ?? undefined,
+    comments: row.signal_comments ?? undefined,
+    evidence: {
+      google_trends: parseEvidence(row.evidence_google_trends),
+      product_hunt: parseEvidence(row.evidence_producthunt),
+      github: parseEvidence(row.evidence_github),
+    },
   }
 }

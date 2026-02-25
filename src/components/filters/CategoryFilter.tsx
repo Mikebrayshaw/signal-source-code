@@ -1,5 +1,5 @@
 import { useSignals } from '../../context/SignalsContext'
-import { ALL_CATEGORIES, CATEGORY_COLORS } from '../../lib/constants'
+import { ALL_CATEGORIES, CATEGORY_COLORS, CATEGORY_LABELS } from '../../lib/constants'
 import { cn } from '../../lib/utils'
 
 export default function CategoryFilter() {
@@ -23,7 +23,7 @@ export default function CategoryFilter() {
                   : 'bg-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
               )}
             >
-              {cat}
+              {CATEGORY_LABELS[cat]}
             </button>
           )
         })}

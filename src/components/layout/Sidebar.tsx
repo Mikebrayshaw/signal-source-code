@@ -7,7 +7,7 @@ import type { NavFilter } from '../../lib/types'
 
 const navItems: { label: string; filter: NavFilter; icon: string }[] = [
   { label: 'All Signals', filter: 'all', icon: '◈' },
-  { label: 'Open', filter: 'open', icon: '◉' },
+  { label: 'High Confidence', filter: 'open', icon: '◉' },
   { label: 'Saved', filter: 'saved', icon: '★' },
   { label: 'Archived', filter: 'archived', icon: '▣' },
 ]

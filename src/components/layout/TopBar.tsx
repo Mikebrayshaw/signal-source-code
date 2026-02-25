@@ -4,6 +4,7 @@ import type { SortOption } from '../../lib/types'
 
 const sortOptions: { label: string; value: SortOption }[] = [
   { label: 'Newest', value: 'newest' },
+  { label: 'Most Relevant', value: 'most-relevant' },
   { label: 'Oldest', value: 'oldest' },
   { label: 'Most Points', value: 'most-points' },
   { label: 'Most Comments', value: 'most-comments' },

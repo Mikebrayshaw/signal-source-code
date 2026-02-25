@@ -1,7 +1,7 @@
 import { useSignals } from '../../context/SignalsContext'
 
 export default function StatsBlock() {
-  const { totalCount, openCount, savedCount } = useSignals()
+  const { totalCount, highConfidenceCount, savedCount } = useSignals()
 
   return (
     <div className="grid grid-cols-3 gap-2 text-center">
@@ -10,8 +10,8 @@ export default function StatsBlock() {
         <div className="text-[10px] text-muted font-body uppercase tracking-wider">Total</div>
       </div>
       <div>
-        <div className="text-lg font-mono font-bold text-accent">{openCount}</div>
-        <div className="text-[10px] text-muted font-body uppercase tracking-wider">Open</div>
+        <div className="text-lg font-mono font-bold text-accent">{highConfidenceCount}</div>
+        <div className="text-[10px] text-muted font-body uppercase tracking-wider">High Conf.</div>
       </div>
       <div>
         <div className="text-lg font-mono font-bold text-amber">{savedCount}</div>

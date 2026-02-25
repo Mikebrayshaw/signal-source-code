@@ -1,7 +1,6 @@
 import CategoryFilter from './CategoryFilter'
 import SignalTypeFilter from './SignalTypeFilter'
 import DateFilter from './DateFilter'
-import SolutionFilter from './SolutionFilter'
 
 export default function FilterPanel() {
   return (
@@ -9,7 +8,6 @@ export default function FilterPanel() {
       <CategoryFilter />
       <SignalTypeFilter />
       <DateFilter />
-      <SolutionFilter />
     </div>
   )
 }
