@@ -28,6 +28,11 @@ export default function SignalCardCompact({ signal }: { signal: Signal }) {
 
       {/* Right: relevance + meta + actions */}
       <div className="flex items-center gap-3 shrink-0">
+        {signal.build_prompt && (
+          <span className="px-1.5 py-0.5 bg-accent/15 text-accent rounded text-xs font-mono hidden sm:inline" title="Starter prompt available">
+            Build
+          </span>
+        )}
         <span className="px-2 py-0.5 bg-blue-500/15 text-blue-400 rounded text-xs font-mono hidden sm:inline">
           {signal.relevance_score}/10
         </span>

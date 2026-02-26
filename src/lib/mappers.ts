@@ -72,6 +72,7 @@ export function mapValidatedOpportunityToSignal(row: ValidatedOpportunityRow): S
     signal_url: row.signal_url || '',
     points: row.signal_score ?? undefined,
     comments: row.signal_comments ?? undefined,
+    build_prompt: row.build_prompt || '',
     evidence: {
       google_trends: parseEvidence(row.evidence_google_trends),
       product_hunt: parseEvidence(row.evidence_producthunt),

@@ -22,6 +22,7 @@ export interface Signal {
   signal_url: string
   points?: number
   comments?: number
+  build_prompt?: string
   evidence: {
     google_trends?: EvidenceBucket
     product_hunt?: EvidenceBucket
@@ -49,6 +50,7 @@ export interface ValidatedOpportunityRow {
   evidence_google_trends: any
   evidence_producthunt: any
   evidence_github: any
+  build_prompt?: string
   validated_at: string
   model_used: string
 }

@@ -1,8 +1,29 @@
+import { useState } from 'react'
 import type { Signal } from '../../lib/types'
 import { formatRelativeDate } from '../../lib/utils'
 import CategoryTag from './CategoryTag'
 import { ConfidenceBadge } from './SignalTypeTag'
 import SaveArchiveActions from './SaveArchiveActions'
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="px-2 py-1 text-xs font-mono rounded bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+    >
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
+  )
+}
 
 export default function SignalCard({ signal }: { signal: Signal }) {
   const { google_trends, product_hunt, github } = signal.evidence
@@ -69,6 +90,24 @@ export default function SignalCard({ signal }: { signal: Signal }) {
             )}
           </div>
         </div>
+      )}
+
+      {/* Build This section */}
+      {signal.build_prompt && (
+        <details className="mb-3 bg-accent/5 rounded-lg border border-accent/20 group/build">
+          <summary className="px-3 py-2 cursor-pointer text-sm font-mono text-accent hover:text-accent/80 transition-colors select-none flex items-center justify-between">
+            <span>Build This</span>
+            <span className="text-xs text-muted group-open/build:hidden">click to expand</span>
+          </summary>
+          <div className="px-3 pb-3">
+            <div className="flex justify-end mb-2">
+              <CopyButton text={signal.build_prompt} />
+            </div>
+            <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/30 rounded p-3 overflow-x-auto">
+              {signal.build_prompt}
+            </pre>
+          </div>
+        </details>
       )}
 
       {/* Bottom row: scores + meta */}
