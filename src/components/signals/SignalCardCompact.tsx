@@ -1,10 +1,12 @@
 import type { Signal } from '../../lib/types'
 import { formatRelativeDate } from '../../lib/utils'
+import { useSubscription } from '../../context/SubscriptionContext'
 import CategoryTag from './CategoryTag'
 import { ConfidenceBadge } from './SignalTypeTag'
 import SaveArchiveActions from './SaveArchiveActions'
 
 export default function SignalCardCompact({ signal }: { signal: Signal }) {
+  const { isPro } = useSubscription()
   return (
     <article className="bg-surface border border-border rounded-lg px-4 py-3 hover:border-accent/20 transition-colors group flex items-center gap-4">
       {/* Left: first category + confidence */}
@@ -29,8 +31,8 @@ export default function SignalCardCompact({ signal }: { signal: Signal }) {
       {/* Right: relevance + meta + actions */}
       <div className="flex items-center gap-3 shrink-0">
         {signal.build_prompt && (
-          <span className="px-1.5 py-0.5 bg-accent/15 text-accent rounded text-xs font-mono hidden sm:inline" title="Starter prompt available">
-            Build
+          <span className={`px-1.5 py-0.5 rounded text-xs font-mono hidden sm:inline ${isPro ? 'bg-accent/15 text-accent' : 'bg-violet-500/15 text-violet-400'}`} title={isPro ? 'Starter prompt available' : 'Pro feature'}>
+            {isPro ? 'Build' : 'Pro'}
           </span>
         )}
         <span className="px-2 py-0.5 bg-blue-500/15 text-blue-400 rounded text-xs font-mono hidden sm:inline">

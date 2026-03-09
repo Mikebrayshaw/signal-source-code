@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Signal } from '../../lib/types'
 import { formatRelativeDate } from '../../lib/utils'
+import { useSubscription } from '../../context/SubscriptionContext'
 import CategoryTag from './CategoryTag'
 import { ConfidenceBadge } from './SignalTypeTag'
 import SaveArchiveActions from './SaveArchiveActions'
@@ -26,6 +27,7 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function SignalCard({ signal }: { signal: Signal }) {
+  const { isPro, checkout } = useSubscription()
   const { google_trends, product_hunt, github } = signal.evidence
 
   return (
@@ -93,7 +95,7 @@ export default function SignalCard({ signal }: { signal: Signal }) {
       )}
 
       {/* Build This section */}
-      {signal.build_prompt && (
+      {signal.build_prompt && isPro && (
         <details className="mb-3 bg-accent/5 rounded-lg border border-accent/20 group/build">
           <summary className="px-3 py-2 cursor-pointer text-sm font-mono text-accent hover:text-accent/80 transition-colors select-none flex items-center justify-between">
             <span>Build This</span>
@@ -108,6 +110,25 @@ export default function SignalCard({ signal }: { signal: Signal }) {
             </pre>
           </div>
         </details>
+      )}
+
+      {signal.build_prompt && !isPro && (
+        <div className="mb-3 bg-accent/5 rounded-lg border border-accent/20 relative overflow-hidden">
+          <div className="px-3 py-2 text-sm font-mono text-accent">Build This</div>
+          <div className="px-3 pb-3">
+            <pre className="text-sm text-gray-300 font-mono whitespace-pre-wrap leading-relaxed bg-black/30 rounded p-3 blur-sm select-none" aria-hidden="true">
+              {signal.build_prompt.slice(0, 200)}...
+            </pre>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+            <button
+              onClick={checkout}
+              className="px-4 py-2 bg-accent text-black font-display font-semibold text-sm rounded-lg hover:bg-accent/90 transition-colors"
+            >
+              Upgrade to Pro — $99/year
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Bottom row: scores + meta */}

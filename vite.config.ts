@@ -35,4 +35,9 @@ export default defineConfig({
       input: 'app.html',
     },
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
 })

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useSubscription } from '../context/SubscriptionContext'
 import { ALL_CATEGORIES } from '../lib/constants'
 import { cn } from '../lib/utils'
 import type { Category } from '../lib/types'
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth()
+  const { isPro, currentPeriodEnd, checkout } = useSubscription()
   const [emailDigest, setEmailDigest] = useState(true)
   const [digestFrequency, setDigestFrequency] = useState<'daily' | 'weekly'>('daily')
   const [preferredCategories, setPreferredCategories] = useState<Set<Category>>(new Set())
@@ -37,6 +39,39 @@ export default function SettingsPage() {
             Sign Out
           </button>
         </div>
+      </section>
+
+      {/* Subscription */}
+      <section className="bg-surface border border-border rounded-xl p-5 mb-4">
+        <h2 className="font-body font-semibold text-sm text-gray-200 mb-3">Subscription</h2>
+        {isPro ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-emerald-400 font-body font-semibold">Pro</p>
+              {currentPeriodEnd && (
+                <p className="text-xs text-muted font-body mt-0.5">
+                  Renews {new Date(currentPeriodEnd).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+            <span className="px-3 py-1 bg-emerald-500/15 text-emerald-400 rounded-lg text-xs font-mono">
+              Active
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-300 font-body">Free plan</p>
+              <p className="text-xs text-muted font-body mt-0.5">Upgrade to unlock Build prompts</p>
+            </div>
+            <button
+              onClick={checkout}
+              className="px-4 py-2 text-sm font-display font-semibold bg-accent text-black rounded-lg hover:bg-accent/90 transition-colors"
+            >
+              Upgrade — $99/year
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Email Digest */}
